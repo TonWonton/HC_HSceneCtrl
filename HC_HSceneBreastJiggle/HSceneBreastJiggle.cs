@@ -7,10 +7,6 @@ using Character;
 using H;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using HarmonyLib;
-using ILLGames.ADV.Commands.Base;
-using BepInEx.Logging;
-using Il2CppInterop.Runtime.Injection;
-
 
 namespace HC_HSceneBreastJiggle
 {
@@ -19,8 +15,7 @@ namespace HC_HSceneBreastJiggle
     {
         public const string PluginName = "HC_HSceneBreastJiggle";
         public const string GUID = "HC_HSceneBreastJiggle";
-        public const string PluginVersion = "0.0.1";
-
+        public const string PluginVersion = "1.0.0";
         //Breast softness
         public static ConfigEntry<bool> EnableBreastChange;
         public static ConfigEntry<float> BaseSoftness;
@@ -36,26 +31,23 @@ namespace HC_HSceneBreastJiggle
         public static int femalesCount;
         public static bool applied;
 
-        public static ManualLogSource log = new ManualLogSource("HC_HSceneBreastJiggle");
-
         public override void Load()
         {
             //Breast softness
             EnableBreastChange = Config.Bind("Breast softness", "Enable custom breast softness values during HScene", false, "Enable custom values during HScene\nOnly affects HScene");
-            BaseSoftness = Config.Bind("Breast softness", "Base softness", 0.5f, new ConfigDescription("Set base softness", new AcceptableValueRange<float>(0f, 1f)));
-            TipSoftness = Config.Bind("Breast softness", "Tip softness", 0.5f, new ConfigDescription("Set tip softness", new AcceptableValueRange<float>(0f, 1f)));
-            Softness = Config.Bind("Breast softness", "Weight", 0.5f, new ConfigDescription("Set weight", new AcceptableValueRange<float>(0f, 1f)));
-            BreastSizeScalingMultiplier = Config.Bind("Breast softness", "How much breast softness scales exponentially down with breast size", 0.5f, new ConfigDescription
-                ("Higher values = less bounce on larger breasts. Smaller breasts are affected exponentially less.\n100% = 0% bounce on max size, 0% = same as settings.", new AcceptableValueRange<float>(0f, 1f)));
-            ScaleSoftness = Config.Bind("Breast softness", "Also scale weight down with size", true, "Also scale weight down with breast size");
+            BaseSoftness = Config.Bind("Breast softness", "Softness base", 0.66f, new ConfigDescription("Set base softness", new AcceptableValueRange<float>(0f, 1f)));
+            TipSoftness = Config.Bind("Breast softness", "Softness tip", 0.66f, new ConfigDescription("Set tip softness", new AcceptableValueRange<float>(0f, 1f)));
+            Softness = Config.Bind("Breast softness", "Softness weight", 0.66f, new ConfigDescription("Set weight", new AcceptableValueRange<float>(0f, 1f)));
+            BreastSizeScalingMultiplier = Config.Bind("Breast softness", "Scale down softness with size", 0.25f, new ConfigDescription
+                                                                        ("Higher values = less bounce on larger breasts.\nSmaller breasts are affected exponentially less." +
+                                                                        "\n100% = 0% bounce on max size, 0% = same as settings.", new AcceptableValueRange<float>(0f, 1f)));
+            ScaleSoftness = Config.Bind("Breast softness", "Scale down weight with size", true, "Also scale weight down with breast size");
             EnableBreastChange.SettingChanged += (sender, args) => SaveAndApplyData();
             BaseSoftness.SettingChanged += (sender, args) => SaveAndApplyData();
             TipSoftness.SettingChanged += (sender, args) => SaveAndApplyData();
-            BreastSizeScalingMultiplier.SettingChanged += (sender, args) => SaveAndApplyData();
             Softness.SettingChanged += (sender, args) => SaveAndApplyData();
+            BreastSizeScalingMultiplier.SettingChanged += (sender, args) => SaveAndApplyData();
             ScaleSoftness.SettingChanged += (sender, args) => SaveAndApplyData();
-
-            BepInEx.Logging.Logger.Sources.Add(log);
             Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
         }
 
@@ -156,6 +148,7 @@ namespace HC_HSceneBreastJiggle
                 //Reset variables so settings don't proc outside of HScene
                 hScene = null;
                 applied = false;
+                hSceneFemales = null;
                 femalesCount = 0;
             }
         }
