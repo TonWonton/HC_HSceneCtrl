@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HC_HSceneCtrl", "HC_HSceneC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HC_HGaugeAndSpeedCtrl", "HC_HGaugeCtrlNew\HC_HGaugeAndSpeedCtrl.csproj", "{6730EDA3-7C90-4F3A-B13D-DFE4408B83C4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HC_HSceneBreastJiggle", "HC_HSceneBreastJiggle\HC_HSceneBreastJiggle.csproj", "{02C17FD3-E078-468D-8D8C-3F371852CEFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6730EDA3-7C90-4F3A-B13D-DFE4408B83C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6730EDA3-7C90-4F3A-B13D-DFE4408B83C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6730EDA3-7C90-4F3A-B13D-DFE4408B83C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02C17FD3-E078-468D-8D8C-3F371852CEFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02C17FD3-E078-468D-8D8C-3F371852CEFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02C17FD3-E078-468D-8D8C-3F371852CEFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02C17FD3-E078-468D-8D8C-3F371852CEFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

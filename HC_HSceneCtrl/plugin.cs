@@ -18,9 +18,7 @@ namespace Plugin
     public class HC_HSceneCtrl : BasePlugin
     {
         public const string PluginName = "HC_HSceneCtrl";
-
         public const string GUID = "HC_HSceneCtrl";
-
         public const string PluginVersion = "0.3.0";
 
         //Ahegao
@@ -34,13 +32,7 @@ namespace Plugin
         public static ConfigEntry<float> minSpeed;
         public static ConfigEntry<int> tearsLevel;
         public static ConfigEntry<float> blush;
-        //Breast softness
-        public static ConfigEntry<bool> EnableBreastChange;
-        public static ConfigEntry<float> BaseSoftness;
-        public static ConfigEntry<float> TipSoftness;
-        public static ConfigEntry<float> BreastSizeScalingMultiplier;
-        public static ConfigEntry<float> Softness;
-        public static ConfigEntry<bool> ScaleSoftness;
+        
         //Patching GameObject
         public GameObject HSceneCtrl;
         //Females array for applying breast softness
@@ -72,20 +64,6 @@ namespace Plugin
             blush = Config.Bind("Ahegao", "Blush amount during ahegao and faintness", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 2.8f)));
             minSpeed = Config.Bind("Ahegao", "Minimum speed for eye roll during faintness", 0.75f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 1f)));
             tearsLevel = Config.Bind("Ahegao", "Tears level during ahegao and faintness", 2, new ConfigDescription("Set tears level", new AcceptableValueList<int>(0, 1, 2, 3)));
-            //Breast softness
-            EnableBreastChange = Config.Bind("Breast softness", "Enable custom breast softness values during HScene", false, "Enable custom values during HScene\nOnly affects HScene");
-            BaseSoftness = Config.Bind("Breast softness", "Base softness", 0.5f, new ConfigDescription("Set base softness", new AcceptableValueRange<float>(0f, 1f)));
-            TipSoftness = Config.Bind("Breast softness", "Tip softness", 0.5f, new ConfigDescription("Set tip softness", new AcceptableValueRange<float>(0f, 1f)));
-            Softness = Config.Bind("Breast softness", "Weight", 0.5f, new ConfigDescription("Set weight", new AcceptableValueRange<float>(0f, 1f)));
-            BreastSizeScalingMultiplier = Config.Bind("Breast softness", "How much breast softness scales exponentially down with breast size", 0.5f, new ConfigDescription
-                ("Higher values = less bounce on larger breasts. Smaller breasts are affected exponentially less.\n100% = 0% bounce on max size, 0% = same as settings.", new AcceptableValueRange<float>(0f, 1f)));
-            ScaleSoftness = Config.Bind("Breast softness", "Also scale weight down with size", true, "Also scale weight down with breast size");
-            EnableBreastChange.SettingChanged += (sender, args) => UpdateBreastSoftness();
-            BaseSoftness.SettingChanged += (sender, args) => UpdateBreastSoftness();
-            TipSoftness.SettingChanged += (sender, args) => UpdateBreastSoftness();
-            BreastSizeScalingMultiplier.SettingChanged += (sender, args) => UpdateBreastSoftness();
-            Softness.SettingChanged += (sender, args) => UpdateBreastSoftness();
-            ScaleSoftness.SettingChanged += (sender, args) => UpdateBreastSoftness();
 
             //Patch hook methods and register monobehaviour component
             Harmony.CreateAndPatchAll(typeof(HSceneCtrlComponent.Hooks), GUID);
@@ -100,53 +78,6 @@ namespace Plugin
                 HSceneCtrl.AddComponent<HSceneCtrlComponent>();
             }
             else HSceneCtrl.AddComponent<HSceneCtrlComponent>();
-        }
-
-
-        public static void GetFemales()
-        {
-            if (HSceneCtrlComponent.hScene != null)
-            {
-                //Get females from HScene refrence array and put into array for saving and updating data
-                Il2CppReferenceArray<Human> females = HSceneCtrlComponent.hScene.GetFemales();
-                List<Human> femalesList = new List<Human>();
-                foreach (Human female in females)
-                {
-                    if (female != null)
-                        femalesList.Add(female);
-                }
-                femalesCount = femalesList.Count;
-                hSceneFemales = new Human[femalesList.Count];
-                hSceneFemales = femalesList.ToArray();
-
-                List<HVoiceCtrl.Voice> voiceList = new List<HVoiceCtrl.Voice>();
-                foreach (HVoiceCtrl.Voice voice in HSceneCtrlComponent.hScene.CtrlVoice.NowVoices)
-                { 
-                    if (voice != null)
-                        voiceList.Add(voice);
-                }
-
-                HVoiceCtrl.Voice[] voiceArray = new HVoiceCtrl.Voice[voiceList.Count];
-                voiceArray = voiceList.ToArray();
-                HSceneCtrlComponent.dummy = new HVoiceCtrl.FaceInfo[voiceList.Count];
-                for (int i = 0; i < voiceList.Count; i++)
-                {
-                    HSceneCtrlComponent.dummy[i] = voiceArray[i].Face;
-                }
-            }
-        }
-
-        public static void SaveData()
-        {
-            if (femalesCount >= 1)
-            {
-                for (int i = 0; i < femalesCount; i++)
-                {
-                    originalBreastData = new float[3] { hSceneFemales[i].fileCustom.Body.bustSoftness, hSceneFemales[i].fileCustom.Body.bustSoftness2, hSceneFemales[i].fileCustom.Body.bustWeight };
-                    originalEyeX[i] = hSceneFemales[i].fileCustom.Face.eyeX;
-                    originalEyeY[i] = hSceneFemales[i].fileCustom.Face.eyeY;
-                }
-            }
         }
 
         public static void ApplyAhegaoFull(int i)
@@ -175,47 +106,6 @@ namespace Plugin
             HC_HSceneCtrl.hSceneFemales[i].face.ChangeMouthFixed(true);
             HC_HSceneCtrl.hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(HC_HSceneCtrl.blush.Value));
             doingAhegao = false;
-        }
-
-
-        public static void UpdateBreastSoftness()
-        {
-            if (femalesCount >= 1)
-            {
-                if (EnableBreastChange.Value)
-                {
-                    //Apply and update breast softness then revert changes to avoid permanently changing character
-                    for (int i = 0; i < femalesCount; i++)
-                    {
-                        float breastSizeMultiplier = ((hSceneFemales[i].body.breastFixed.bustSize * hSceneFemales[i].body.breastFixed.bustSize * hSceneFemales[i].body.breastFixed.bustSize
-                                                       * HC_HSceneCtrl.BreastSizeScalingMultiplier.Value * hSceneFemales[i].body.breastFixed.bustSize * -1) + 1);
-                        hSceneFemales[i].fileCustom.Body.bustSoftness = BaseSoftness.Value * breastSizeMultiplier;
-                        hSceneFemales[i].fileCustom.Body.bustSoftness2 = HC_HSceneCtrl.TipSoftness.Value * breastSizeMultiplier;
-                        if (HC_HSceneCtrl.ScaleSoftness.Value)
-                            hSceneFemales[i].fileCustom.Body.bustWeight = HC_HSceneCtrl.Softness.Value * breastSizeMultiplier;
-                        else
-                            hSceneFemales[i].fileCustom.Body.bustWeight = HC_HSceneCtrl.Softness.Value;
-                        hSceneFemales[i].body.UpdateBustShake();
-                        RevertBreastData(i);
-                    }
-                }
-                else
-                {
-                    //Revert breast data if setting disabled
-                    for (int i = 0; i < femalesCount; i++)
-                    {
-                        RevertBreastData(i);
-                        hSceneFemales[i].body.UpdateBustShake();
-                    }
-                }
-            }
-        }
-
-        public static void RevertBreastData(int i)
-        {
-            hSceneFemales[i].fileCustom.Body.bustSoftness = originalBreastData[0];
-            hSceneFemales[i].fileCustom.Body.bustSoftness2 = originalBreastData[1];
-            hSceneFemales[i].fileCustom.Body.bustWeight = originalBreastData[2];
         }
 
         public class HSceneCtrlComponent : MonoBehaviour
@@ -249,19 +139,6 @@ namespace Plugin
                     nowFemaleOrgasm = true;
                     if (orgasms < 3)
                         orgasms++;
-                }
-
-                [HarmonyPostfix]
-                [HarmonyPatch(typeof(HScene), "ChangeModeCtrl")]
-                public static void ChangeModeCtrlHook()
-                {
-                    if (!applied)
-                    {
-                        HC_HSceneCtrl.GetFemales();
-                        HC_HSceneCtrl.SaveData();
-                        HC_HSceneCtrl.UpdateBreastSoftness();
-                        applied = true;
-                    }
                 }
 
                 [HarmonyPrefix]
