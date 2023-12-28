@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace HC_HGaugeAndSpeedCtrl
 {
+    [BepInProcess("HoneyCome")]
     [BepInPlugin(GUID, PluginName, PluginVersion)]
     public class HGaugeAndSpeedCtrl : BasePlugin
     {

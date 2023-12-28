@@ -10,6 +10,7 @@ using HarmonyLib;
 
 namespace HC_HSceneBreastJiggle
 {
+    [BepInProcess("HoneyCome")]
     [BepInPlugin(GUID, PluginName, PluginVersion)]
     public class HSceneBreastJiggle : BasePlugin
     {
