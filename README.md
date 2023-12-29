@@ -29,6 +29,9 @@ https://github.com/ManlyMarco/HC-HF_Patch
 
 ## Description
 Thanks to Sabakan for sharing their code and letting me use it.
+## Known issues
+**HC_HGaugeAndSpeedCtrl**
+- Male gauge will still increase when it isn't supposed to, due to female faintness altering the position
 
 ## HC_HGaugeAndSpeedCtrl features
 - Female can trigger climax together
