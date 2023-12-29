@@ -180,35 +180,26 @@ namespace HC_Ahegao
             private static bool ahegaoMainFemaleProc;
             private static bool ahegaoBothFemaleProc;
             //MoveEyes() variables
-            private static float[] moveArray;
+            private static float[] moveArray = new float[8];
             private static int target;
-            private static float currentY;
-            private static float currentX;
+            private static float startY;
+            private static float startX;
             private static float targetY;
             private static float targetX;
+            private static float posPercent;
             private static float moveMultiY;
             private static float moveMultiX;
             private static bool moveEyesPositiveY;
             private static bool moveEyesPositiveX;
             private static bool doBlend;
-            private static bool eyesBlendProc;
-            private static bool moveEyesY;
-            private static bool moveEyesX;
+            private static bool moveEyes;
+            private static bool moveEyesBoth;
             //Variables
             private static bool applied;
             public static int paused;
             //Bool flag functions
             private static bool ahegaoOrgasmShouldProc() {
                 return nowFemaleOrgasm && (ahegaoOnOrgasm.Value || orgasms > 2);
-            }
-            private static bool ahegaoMainFemaleShouldProc() {
-                return femalesCount == 1 || !(hScene._mode == 6|| hScene._mode == 7);
-            }
-            private static bool ahegaoBothFemaleShouldProc() {
-                return hScene._mode == 6 && hScene._modeCtrl == 0 || hScene._mode == 7;
-            }
-            private static bool eyesBlendShouldProc() {
-                return (moveEyesY || moveEyesX) && doBlend;
             }
             
             //States for ahegao in order to not apply ahegao when not needed and to control logic
@@ -231,127 +222,95 @@ namespace HC_Ahegao
                 //MoveEyes() function will calculate movement and set moveEyes to true
                 //which will be seen by Update() and will call DoMoveEyes()
                 //until eyes reach target position, which will set moveEyes to false
-                if (eyesBlendProc && !ahegaoBothFemaleProc)
+                if (moveEyes && doBlend)
                 {
                     DoMoveEyes(target);
                 }
-                else if ((moveEyesY || moveEyesX) && !doBlend)
+                if (moveEyesBoth && doBlend)
+                {
+                    DoMoveEyesBoth(moveArray);
+                }
+                else if ((moveEyes || moveEyesBoth) && !doBlend)
                 {
                     for (int i = 0; i < femalesCount; i++)
                     {
                         hSceneFemales[i].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(targetY));
                         hSceneFemales[i].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(targetX));
                     }
-                    moveEyesY = false;
-                    moveEyesX = false;
+                    moveEyes = false;
                 }
             }
 
             public static void DoMoveEyes(int i)
             {
-                if (moveEyesPositiveY) //If eyes are moving in positive direction
+                //Move eyes and if target reached stop moving
+                posPercent += Time.deltaTime * eyeMoveSpeed.Value;
+                hSceneFemales[i].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(Mathf.Lerp(startY, targetY, posPercent)));
+                hSceneFemales[i].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(Mathf.Lerp(startX, targetX, posPercent)));
+                if (posPercent >= 1)
                 {
-                    //Move eyes and if target reached stop moving
-                    currentY += (moveMultiY * Time.deltaTime);
-                    hSceneFemales[i].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(currentY));
-                    if (hSceneFemales[i].fileCustom.Face.eyeY > 1f)
-                    {
-                        hSceneFemales[i].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(1f));
-                        log.LogMessage($"Finished moving eyes. TargetY: {targetY}, current: {hSceneFemales[i].fileCustom.Face.eyeY}");
-                        moveEyesY = false;
-                    }
-                    else if (hSceneFemales[i].fileCustom.Face.eyeY >= targetY)
-                    {
-                        log.LogMessage($"Finished moving eyes. TargetY: {targetY}, current: {hSceneFemales[i].fileCustom.Face.eyeY}");
-                        moveEyesY = false;
-                    }
+                    moveEyes = false;
                 }
-                else //If eyes are moving in negative direction
+            }
+
+            public static void DoMoveEyesBoth(float[] moveEyesData)
+            {
+                //Move eyes and if target reached stop moving
+                posPercent += Time.deltaTime * eyeMoveSpeed.Value;
+                hSceneFemales[0].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(Mathf.Lerp(moveArray[0], moveArray[1], posPercent)));
+                hSceneFemales[0].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(Mathf.Lerp(moveArray[2], moveArray[3], posPercent)));
+                hSceneFemales[1].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(Mathf.Lerp(moveArray[4], moveArray[5], posPercent)));
+                hSceneFemales[1].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(Mathf.Lerp(moveArray[6], moveArray[7], posPercent)));
+                if (posPercent >= 1)
                 {
-                    //Move eyes and if target reached stop moving
-                    currentY += (moveMultiY * Time.deltaTime);
-                    hSceneFemales[i].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(currentY));
-                    if (hSceneFemales[i].fileCustom.Face.eyeY < 0f)
-                    {
-                        hSceneFemales[i].face.ChangeSettingEyePosY(new Il2CppSystem.Nullable<float>(0f));
-                        log.LogMessage($"Finished moving eyes. TargetY: {targetY}, current: {hSceneFemales[i].fileCustom.Face.eyeY}");
-                        moveEyesY = false;
-                    }
-                    else if (hSceneFemales[i].fileCustom.Face.eyeY <= targetY)
-                    {
-                        log.LogMessage($"Finished moving eyes. TargetY: {targetY}, current: {hSceneFemales[i].fileCustom.Face.eyeY}");
-                        moveEyesY = false;
-                    }
-                }
-                if (moveEyesPositiveX) //If eyes are moving in positive direction
-                {
-                    //Move eyes and if target reached stop moving
-                    currentX += (moveMultiX * Time.deltaTime);
-                    hSceneFemales[i].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(currentX));
-                    if (hSceneFemales[i].fileCustom.Face.eyeX > 1f)
-                    {
-                        hSceneFemales[i].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(1f));
-                        log.LogMessage($"Finished moving eyes. TargetX: {targetX}, current: {hSceneFemales[i].fileCustom.Face.eyeX}");
-                        moveEyesX = false;
-                    }
-                    else if (hSceneFemales[i].fileCustom.Face.eyeX >= targetX)
-                    {
-                        log.LogMessage($"Finished moving eyes. TargetX: {targetX}, current: {hSceneFemales[i].fileCustom.Face.eyeX}");
-                        moveEyesX = false;
-                    }
-                }
-                else //If eyes are moving in negative direction
-                {
-                    //Move eyes and if target reached stop moving
-                    currentX += (moveMultiX * Time.deltaTime);
-                    hSceneFemales[i].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(currentX));
-                    if (hSceneFemales[i].fileCustom.Face.eyeX < 0f)
-                    {
-                        hSceneFemales[i].face.ChangeSettingEyePosX(new Il2CppSystem.Nullable<float>(0f));
-                        log.LogMessage($"Finished moving eyes. TargetX: {targetX}, current: {hSceneFemales[i].fileCustom.Face.eyeX}");
-                        moveEyesX = false;
-                    }
-                    else if (hSceneFemales[i].fileCustom.Face.eyeX <= targetX)
-                    {
-                        log.LogMessage($"Finished moving eyes. TargetX: {targetX}, current: {hSceneFemales[i].fileCustom.Face.eyeX}");
-                        moveEyesX = false;
-                    }
+                    moveEyesBoth = false;
                 }
             }
 
             public static void MoveEyes(int i, float targetPositionY, float targetPositionX, bool blend)
             {
-                if (!ahegaoBothFemaleProc)
+                //Set start and targets for lerp
+                posPercent = 0;
+                startY = hSceneFemales[i].fileCustom.Face.eyeY;
+                startX = hSceneFemales[i].fileCustom.Face.eyeX;
+                targetY = targetPositionY;
+                targetX = targetPositionX;
+                doBlend = blend;
+                if (targetY > 1f)
+                    targetY = 1f;
+                else if (targetY < 0f)
+                    targetY = 0f;
+                if (targetX > 1f)
+                    targetX = 1f;
+                else if (targetX < 0f)
+                    targetX = 0f;
+                //If both female ahegao
+                if (ahegaoBothFemaleProc)
+                {
+                    if (i == 0)
+                    {
+                        moveArray[0] = hSceneFemales[0].fileCustom.Face.eyeY;
+                        moveArray[1] = targetY;
+                        moveArray[2] = hSceneFemales[0].fileCustom.Face.eyeX;
+                        moveArray[3] = targetX;
+                    }
+                    else if (i == 1)
+                    {
+                        moveArray[4] = hSceneFemales[1].fileCustom.Face.eyeY;
+                        moveArray[5] = targetY;
+                        moveArray[6] = hSceneFemales[1].fileCustom.Face.eyeX;
+                        moveArray[7] = targetX;
+                        log.LogMessage($"\n\nPreparing to move eyes for both\nTarget1 current: {moveArray[0]} + {moveArray[2]}\nTarget1 target: {moveArray[1]} + {moveArray[3]}\n" +
+                                                                            $"Target2 current: {moveArray[4]} + {moveArray[6]}\nTarget2 target: {moveArray[5]} + {moveArray[7]}");
+                        moveEyesBoth = true;
+                    }
+                }
+                //If only one female ahegao
+                else
                 {
                     target = i;
-                    currentY = hSceneFemales[i].fileCustom.Face.eyeY;
-                    currentX = hSceneFemales[i].fileCustom.Face.eyeX;
-                    targetY = targetPositionY;
-                    targetX = targetPositionX;
-                    doBlend = blend;
-                    if (targetY > 1f)
-                        targetY = 1f;
-                    else if (targetY < 0f)
-                        targetY = 0f;
-                    if (targetX > 1f)
-                        targetX = 1f;
-                    else if (targetX < 0f)
-                        targetX = 0f;
-                    //Calculate movement direction and speed and set moveEyes to true
-                    moveMultiY = (targetY - currentY) * eyeMoveSpeed.Value;
-                    moveMultiX = (targetX - currentX) * eyeMoveSpeed.Value;
-                    if (moveMultiY > 0)
-                        moveEyesPositiveY = true;
-                    else
-                        moveEyesPositiveY = false;
-                    if (moveMultiX > 0)
-                        moveEyesPositiveX = true;
-                    else
-                        moveEyesPositiveX = false;
-                    log.LogMessage($"\n\nPreparing to move eyes\nTargetY: {targetY}, up: {moveEyesPositiveY}\nTargetX: {targetX}, up: {moveEyesPositiveY}\nBlend: {doBlend}\n");
-                    moveEyesY = true;
-                    moveEyesX = true;
-                    eyesBlendProc = eyesBlendShouldProc();
+                    log.LogMessage($"\n\nPreparing to move eyes\nTargetY: {targetY}, TargetX: {targetX}, Blend: {doBlend}\n");
+                    moveEyes = true;
                 }
             }
 
@@ -584,8 +543,23 @@ namespace HC_Ahegao
                 [HarmonyPatch(typeof(Houshi), "SetPlay")]
                 public static void HSceneGetAnimationFlagHook()
                 {
-                    ahegaoMainFemaleProc = ahegaoMainFemaleShouldProc();
-                    ahegaoBothFemaleProc = ahegaoBothFemaleShouldProc();
+                    log.LogMessage($"Mode: {hScene._mode}, ctrl: {hScene._modeCtrl}");
+                    if (hScene._mode == 6 && hScene._modeCtrl == 0 || hScene._mode == 7)
+                    {
+                        ahegaoMainFemaleProc = false;
+                        ahegaoBothFemaleProc = true;
+                    }
+                    else if (!(hScene._mode == 6 && hScene._modeCtrl == 2))
+                    {
+                        ahegaoMainFemaleProc = true;
+                        ahegaoBothFemaleProc = false;
+                    }
+                    else
+                    {
+                        ahegaoMainFemaleProc = false;
+                        ahegaoBothFemaleProc = false;
+                    }
+                    log.LogMessage($"Status on procs: Main: {ahegaoMainFemaleProc}, both: {ahegaoBothFemaleProc}");
                 }
 
                 [HarmonyPostfix]
@@ -633,26 +607,6 @@ namespace HC_Ahegao
                                 state = AhegaoState.afterOrgasm;
                             }
                             else { /*Do nothing if still orgasming*/ }
-                        }
-                        else if (hScene.CtrlFlag.LoopType == -1)
-                        {
-                            if (state != AhegaoState.orgasm && hScene.CtrlFlag.IsFaintness)
-                            {
-                                state = AhegaoState.orgasm;
-                                for (int i = 0; i < femalesCount; i++)
-                                {
-                                    DoAhegao();
-                                }
-                            }
-                            else if (state != AhegaoState.faintness && !hScene.CtrlFlag.IsFaintness)
-                            {
-                                state = AhegaoState.faintness;
-                                for (int i = 0; i < femalesCount; i++)
-                                {
-                                    DoAhegao();
-                                }
-                            }
-                            else { /*Do nothing if state already set and LoopType -1*/ }
                         }
                         //If faintness and not houshi(male foreplay)
                         else if (hScene.CtrlFlag.IsFaintness && hScene._sprite.CategoryFinish._houshiPosKind == 0)
