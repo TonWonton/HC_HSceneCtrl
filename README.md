@@ -42,5 +42,5 @@ Thanks to Sabakan for sharing their code and letting me use it.
 - Change animation speed
 
 ## HC_HSceneBreastJiggle features
-- Set custom values for breast base softness, breast base softness, breast weight, temporarily during HScene
+- Set custom values for breast base softness, breast tip softness, breast weight, temporarily during HScene
 - Scale down values for larger sizes
