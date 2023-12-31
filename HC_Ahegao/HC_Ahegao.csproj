@@ -10,9 +10,9 @@
 		<None Remove="InfoBaseUntiyItem.txt" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.680" />
-		<PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.9.8.2" />
-		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.1" />
+		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.682" />
+		<PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15" />
+		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3" />
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;D:\Games\HoneyCome\BepInEx\Plugins\&quot; /s /i /y" />
