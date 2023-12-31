@@ -16,7 +16,7 @@ namespace HC_HSceneBreastJiggle
     {
         public const string PluginName = "HC_HSceneBreastJiggle";
         public const string GUID = "HC_HSceneBreastJiggle";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
         //Breast softness
         public static ConfigEntry<bool> EnableBreastChange;
         public static ConfigEntry<float> BaseSoftness;

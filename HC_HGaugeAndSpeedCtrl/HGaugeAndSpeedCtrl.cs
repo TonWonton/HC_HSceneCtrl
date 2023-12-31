@@ -14,7 +14,7 @@ namespace HC_HGaugeAndSpeedCtrl
     {
         public const string PluginName = "HC_HGaugeAndSpeedCtrl";
         public const string GUID = "HC_HGaugeAndSpeedCtrl";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
         //Climax together
         public static ConfigEntry<bool> ClimaxTFemale;
