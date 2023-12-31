@@ -25,8 +25,10 @@ namespace HC_Ahegao
         //Ahegao
         public static ConfigEntry<bool> ahegao;
         public static ConfigEntry<bool> ahegaoOnOrgasm;
+        public static ConfigEntry<int> orgasmAmount;
         public static ConfigEntry<float> minSpeed;
         public static ConfigEntry<float> eyeMoveSpeed;
+        public static ConfigEntry<float> maxBlush;
         //Ahegao orgasm
         public static ConfigEntry<int> eyePtnOrgasm;
         public static ConfigEntry<int> eyeBrowPtnOrgasm;
@@ -64,56 +66,58 @@ namespace HC_Ahegao
         public static ConfigEntry<float> openMouthMinFaintnessSpeed;
         public static ConfigEntry<float> blushFaintnessSpeed;
 
-        public static ManualLogSource log = new ManualLogSource(PluginName);
-
         public override void Load()
         {
             //Ahegao
             ahegao = Config.Bind("Ahegao", "Ahegao", true, "Enable ahegao");
             ahegaoOnOrgasm = Config.Bind("Ahegao", "Ahegao on normal orgasm", false);
+            orgasmAmount = Config.Bind("Ahegao", "Orgasm amount for faintness", 3, new ConfigDescription("Set amount of orgasms needed for faintness", new AcceptableValueRange<int>(1, 10)));
             minSpeed = Config.Bind("Ahegao", "Minimum speed for eye roll during faintness", 0.75f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 2f)));
-            eyeMoveSpeed = Config.Bind("Ahegao", "Eye move speed", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 10f)));         
+            eyeMoveSpeed = Config.Bind("Ahegao", "Eye move speed", 15f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 40f)));
+            maxBlush = Config.Bind("Ahegao", "Maximum blush amount", 2.2f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 3.4f)));
             //Ahegao orgasm
-            eyePtnOrgasm = Config.Bind("Ahegao orgasm", "Eye pattern", 0, new ConfigDescription("Set eye pattern", new AcceptableValueRange<int>(0, 24)));
-            eyeBrowPtnOrgasm = Config.Bind("Ahegao orgasm", "Eyebrow pattern", 0, new ConfigDescription("Set eyebrow pattern", new AcceptableValueRange<int>(0, 10)));
-            blinkOrgasm = Config.Bind("Ahegao orgasm", "Blink during ahegao", true);
-            openEyeOrgasm = Config.Bind("Ahegao orgasm", "Eye open amount", 0.79f, new ConfigDescription("Set eye open amount", new AcceptableValueRange<float>(0f, 1f)));
-            eyeRollAmountOrgasm = Config.Bind("Ahegao orgasm", "Eye roll amount during ahegao and faintness", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
-            eyeCrossAmountOrgasm = Config.Bind("Ahegao orgasm", "Eye cross offset amount during ahegao and faintness", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
+            eyePtnOrgasm = Config.Bind("Ahegao orgasm", "Eye pattern", 7, new ConfigDescription("Set eye pattern", new AcceptableValueRange<int>(0, 24)));
+            eyeBrowPtnOrgasm = Config.Bind("Ahegao orgasm", "Eyebrow pattern", 2, new ConfigDescription("Set eyebrow pattern", new AcceptableValueRange<int>(0, 10)));
+            blinkOrgasm = Config.Bind("Ahegao orgasm", "Blink during ahegao", false);
+            openEyeOrgasm = Config.Bind("Ahegao orgasm", "Eye open amount", 0.72f, new ConfigDescription("Set eye open amount", new AcceptableValueRange<float>(0f, 1f)));
+            eyeRollAmountOrgasm = Config.Bind("Ahegao orgasm", "Eye roll amount during ahegao and faintness", 0.25f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
+            eyeCrossAmountOrgasm = Config.Bind("Ahegao orgasm", "Eye cross offset amount during ahegao and faintness", 0.175f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
             eyeHighlightOrgasm = Config.Bind("Ahegao orgasm", "Eye highlight during ahegao", true);
-            tearsLevelOrgasm = Config.Bind("Ahegao orgasm", "Tears level during ahegao and faintness", 2, new ConfigDescription("Set tears level", new AcceptableValueList<int>(0, 1, 2, 3)));
-            mouthPtnOrgasm = Config.Bind("Ahegao orgasm", "Mouth pattern", 0, new ConfigDescription("Set mouth pattern", new AcceptableValueRange<int>(0, 27)));
-            openMouthMinOrgasm = Config.Bind("Ahegao orgasm", "Mouth open amount", 1f, new ConfigDescription("Set mouth open amount", new AcceptableValueRange<float>(0f, 1f)));
-            blushOrgasm = Config.Bind("Ahegao orgasm", "Blush amount during ahegao and faintness", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 2.8f)));
+            tearsLevelOrgasm = Config.Bind("Ahegao orgasm", "Tears level during ahegao and faintness", 3, new ConfigDescription("Set tears level", new AcceptableValueList<int>(0, 1, 2, 3)));
+            mouthPtnOrgasm = Config.Bind("Ahegao orgasm", "Mouth pattern", 18, new ConfigDescription("Set mouth pattern", new AcceptableValueRange<int>(0, 27)));
+            openMouthMinOrgasm = Config.Bind("Ahegao orgasm", "Mouth open amount", 0.33f, new ConfigDescription("Set mouth open amount", new AcceptableValueRange<float>(0f, 1f)));
+            blushOrgasm = Config.Bind("Ahegao orgasm", "Blush amount during ahegao and faintness", 2f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 3.4f)));
             //Ahegao faintness
-            eyePtnFaintness = Config.Bind("Ahegao faintness", "Eye pattern", 0, new ConfigDescription("Set eye pattern", new AcceptableValueRange<int>(0, 24)));
-            eyeBrowPtnFaintness = Config.Bind("Ahegao faintness", "Eyebrow pattern", 0, new ConfigDescription("Set eyebrow pattern", new AcceptableValueRange<int>(0, 10)));
+            eyePtnFaintness = Config.Bind("Ahegao faintness", "Eye pattern", 2, new ConfigDescription("Set eye pattern", new AcceptableValueRange<int>(0, 24)));
+            eyeBrowPtnFaintness = Config.Bind("Ahegao faintness", "Eyebrow pattern", 1, new ConfigDescription("Set eyebrow pattern", new AcceptableValueRange<int>(0, 10)));
             blinkFaintness = Config.Bind("Ahegao faintness", "Blink during ahegao", true);
-            openEyeFaintness = Config.Bind("Ahegao faintness", "Eye open amount", 0.79f, new ConfigDescription("Set eye open amount", new AcceptableValueRange<float>(0f, 1f)));
-            eyeRollAmountFaintness = Config.Bind("Ahegao faintness", "Eye roll amount during ahegao and faintness", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
+            openEyeFaintness = Config.Bind("Ahegao faintness", "Eye open amount", 0.82f, new ConfigDescription("Set eye open amount", new AcceptableValueRange<float>(0f, 1f)));
+            eyeRollAmountFaintness = Config.Bind("Ahegao faintness", "Eye roll amount during ahegao and faintness", 0.075f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
             eyeCrossAmountFaintness = Config.Bind("Ahegao faintness", "Eye cross offset amount during ahegao and faintness", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
             eyeHighlightFaintness = Config.Bind("Ahegao faintness", "Eye highlight during ahegao", true);
-            tearsLevelFaintness = Config.Bind("Ahegao faintness", "Tears level during ahegao and faintness", 2, new ConfigDescription("Set tears level", new AcceptableValueList<int>(0, 1, 2, 3)));
-            mouthPtnFaintness = Config.Bind("Ahegao faintness", "Mouth pattern", 0, new ConfigDescription("Set mouth pattern", new AcceptableValueRange<int>(0, 27)));
-            openMouthMinFaintness = Config.Bind("Ahegao faintness", "Mouth open amount", 1f, new ConfigDescription("Set mouth open amount", new AcceptableValueRange<float>(0f, 1f)));
-            blushFaintness = Config.Bind("Ahegao faintness", "Blush amount during ahegao and faintness", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 2.8f)));
+            tearsLevelFaintness = Config.Bind("Ahegao faintness", "Tears level during ahegao and faintness", 1, new ConfigDescription("Set tears level", new AcceptableValueList<int>(0, 1, 2, 3)));
+            mouthPtnFaintness = Config.Bind("Ahegao faintness", "Mouth pattern", 3, new ConfigDescription("Set mouth pattern", new AcceptableValueRange<int>(0, 27)));
+            openMouthMinFaintness = Config.Bind("Ahegao faintness", "Mouth open amount", 0.33f, new ConfigDescription("Set mouth open amount", new AcceptableValueRange<float>(0f, 1f)));
+            blushFaintness = Config.Bind("Ahegao faintness", "Blush amount during ahegao and faintness", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 3.4f)));
             //Ahegao faintness speed
-            eyePtnFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye pattern", 0, new ConfigDescription("Set eye pattern", new AcceptableValueRange<int>(0, 24)));
-            eyeBrowPtnFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eyebrow pattern", 0, new ConfigDescription("Set eyebrow pattern", new AcceptableValueRange<int>(0, 10)));
-            blinkFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Blink during ahegao", true);
-            openEyeFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye open amount", 0.79f, new ConfigDescription("Set eye open amount", new AcceptableValueRange<float>(0f, 1f)));
-            eyeRollAmountFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye roll amount during ahegao and faintness", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
-            eyeCrossAmountFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye cross offset amount during ahegao and faintness", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
+            eyePtnFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye pattern", 9, new ConfigDescription("Set eye pattern", new AcceptableValueRange<int>(0, 24)));
+            eyeBrowPtnFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eyebrow pattern", 8, new ConfigDescription("Set eyebrow pattern", new AcceptableValueRange<int>(0, 10)));
+            blinkFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Blink during ahegao", false);
+            openEyeFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye open amount", 0.82f, new ConfigDescription("Set eye open amount", new AcceptableValueRange<float>(0f, 1f)));
+            eyeRollAmountFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye roll amount during ahegao and faintness", 0.1f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
+            eyeCrossAmountFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye cross offset amount during ahegao and faintness", 0.15f, new ConfigDescription("", new AcceptableValueRange<float>(-1f, 1f)));
             eyeHighlightFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Eye highlight during ahegao", true);
             tearsLevelFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Tears level during ahegao and faintness", 2, new ConfigDescription("Set tears level", new AcceptableValueList<int>(0, 1, 2, 3)));
-            mouthPtnFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Mouth pattern", 0, new ConfigDescription("Set mouth pattern", new AcceptableValueRange<int>(0, 27)));
-            openMouthMinFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Mouth open amount", 1f, new ConfigDescription("Set mouth open amount", new AcceptableValueRange<float>(0f, 1f)));
-            blushFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Blush amount during ahegao and faintness", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 2.8f)));
+            mouthPtnFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Mouth pattern", 10, new ConfigDescription("Set mouth pattern", new AcceptableValueRange<int>(0, 27)));
+            openMouthMinFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Mouth open amount", 0.63f, new ConfigDescription("Set mouth open amount", new AcceptableValueRange<float>(0f, 1f)));
+            blushFaintnessSpeed = Config.Bind("Ahegao faintness speed", "Blush amount during ahegao and faintness", 1.75f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 3.4f)));
             //Make settings reflect in gameplay when config is changed if settings changed are current ahegao state
             //Ahegao
             ahegao.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.state);
             ahegaoOnOrgasm.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.state);
+            orgasmAmount.SettingChanged += (sender, args) => AhegaoComponent.SetOrgasmAmount();
             minSpeed.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.state);
+            maxBlush.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.state);
             //Ahegao orgasm
             eyePtnOrgasm.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.AhegaoState.orgasm);
             eyeBrowPtnOrgasm.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.AhegaoState.orgasm);
@@ -151,7 +155,6 @@ namespace HC_Ahegao
             openMouthMinFaintnessSpeed.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.AhegaoState.faintnessSpeed);
             blushFaintnessSpeed.SettingChanged += (sender, args) => AhegaoComponent.UpdateAhegaoSettings(AhegaoComponent.AhegaoState.faintnessSpeed);
             //Patch methods
-            BepInEx.Logging.Logger.Sources.Add(log);
             Harmony.CreateAndPatchAll(typeof(AhegaoComponent.Hooks), GUID);
             ahegaoInstance = this;
         }
@@ -173,33 +176,26 @@ namespace HC_Ahegao
             private static float[] originalEyeY;
             private static float[] originalEyeX;
             private static float[] originalBlush;
-            private static int orgasms;
             private static bool nowFemaleOrgasm;
             private static bool ahegaoOrgasmProc;
-            private static bool multiFemale;
             private static bool ahegaoMainFemaleProc;
             private static bool ahegaoBothFemaleProc;
             //MoveEyes() variables
-            private static float[] moveArray = new float[8];
+            private static float[] moveArray;
             private static int target;
             private static float startY;
             private static float startX;
             private static float targetY;
             private static float targetX;
             private static float posPercent;
-            private static float moveMultiY;
-            private static float moveMultiX;
-            private static bool moveEyesPositiveY;
-            private static bool moveEyesPositiveX;
             private static bool doBlend;
             private static bool moveEyes;
             private static bool moveEyesBoth;
             //Variables
             private static bool applied;
-            public static int paused;
             //Bool flag functions
             private static bool ahegaoOrgasmShouldProc() {
-                return nowFemaleOrgasm && (ahegaoOnOrgasm.Value || orgasms > 2);
+                return nowFemaleOrgasm && (ahegaoOnOrgasm.Value || hScene.CtrlFlag.IsFaintness);
             }
             
             //States for ahegao in order to not apply ahegao when not needed and to control logic
@@ -210,11 +206,6 @@ namespace HC_Ahegao
                 faintness = 2,
                 faintnessSpeed = 3,
                 afterOrgasm = 4
-            }
-
-            void Start()
-            {
-                log.LogMessage("Ahegao component started");
             }
 
             void Update()
@@ -300,8 +291,6 @@ namespace HC_Ahegao
                         moveArray[5] = targetY;
                         moveArray[6] = hSceneFemales[1].fileCustom.Face.eyeX;
                         moveArray[7] = targetX;
-                        log.LogMessage($"\n\nPreparing to move eyes for both\nTarget1 current: {moveArray[0]} + {moveArray[2]}\nTarget1 target: {moveArray[1]} + {moveArray[3]}\n" +
-                                                                            $"Target2 current: {moveArray[4]} + {moveArray[6]}\nTarget2 target: {moveArray[5]} + {moveArray[7]}");
                         moveEyesBoth = true;
                     }
                 }
@@ -309,7 +298,6 @@ namespace HC_Ahegao
                 else
                 {
                     target = i;
-                    log.LogMessage($"\n\nPreparing to move eyes\nTargetY: {targetY}, TargetX: {targetX}, Blend: {doBlend}\n");
                     moveEyes = true;
                 }
             }
@@ -333,6 +321,8 @@ namespace HC_Ahegao
                     originalEyeY = new float[femalesCount];
                     originalEyeX = new float[femalesCount];
                     originalBlush = new float[femalesCount];
+                    if (femalesCount > 1)
+                        moveArray = new float[8];
                     //Put females into array and get original data
                     hSceneFemales = femalesList.ToArray();
                     for (int i = 0; i < femalesCount; i++)
@@ -349,6 +339,14 @@ namespace HC_Ahegao
                 originalBlush[i] = hSceneFemales[i].face.fileStatus.hohoAkaRate;
             }
 
+            public static void SetOrgasmAmount()
+            {
+                if (hScene != null)
+                {
+                    hScene.CtrlFlag.GotoFaintnessCount = orgasmAmount.Value;
+                }
+            }
+
             public static void UpdateAhegaoSettings(AhegaoState updateThis)
             {
                 //If setting changed are the same as state, update current state ahegao
@@ -356,71 +354,64 @@ namespace HC_Ahegao
                     switch (state)
                     {
                         case AhegaoState.faintness:
-                            log.LogMessage("Faintness ahegao, applying settings");
                             DoAhegao();
                             break;
                         case AhegaoState.faintnessSpeed:
-                            log.LogMessage("FaintnessSpeed ahegao, applying settings");
                             DoAhegao();
                             break;
                         case AhegaoState.orgasm:
-                            log.LogMessage("Orgasm ahegao, applying settings");
                             DoAhegao();
                             break;
                         case AhegaoState.none:
-                            log.LogMessage("No ahegao, not applying settings");
                             break;
                     }
             }
 
             public static void DoAhegao()
             {
+                //Checks for which female to do ahegao on, and which state of ahegao to apply
+                //Main female ahegao
                 if (ahegaoMainFemaleProc)
                     switch (state)
                     {
                         case AhegaoState.orgasm:
-                            log.LogMessage("Orgasm ahegao, applying settings");
                             DoAhegaoOrgasm(0);
                             break;
                         case AhegaoState.faintness:
-                            log.LogMessage("Faintness ahegao, applying settings");
                             DoAhegaoFaintness(0);
                             break;
                         case AhegaoState.faintnessSpeed:
-                            log.LogMessage("FaintnessSpeed ahegao, applying settings");
                             DoAhegaoFaintnessSpeed(0);
                             break;
                     }
+                //Both female ahegao
                 else if (ahegaoBothFemaleProc)
-                    for (int i = 0; i < femalesCount; i++)
                     switch (state)
                     {
                         case AhegaoState.orgasm:
-                            log.LogMessage("Orgasm ahegao, applying settings");
+                            for (int i = 0; i < femalesCount; i++)
                             DoAhegaoOrgasm(i);
                             break;
                         case AhegaoState.faintness:
-                            log.LogMessage("Faintness ahegao, applying settings");
+                            for (int i = 0; i < femalesCount; i++)
                             DoAhegaoFaintness(i);
                             break;
                         case AhegaoState.faintnessSpeed:
-                            log.LogMessage("FaintnessSpeed ahegao, applying settings");
+                            for (int i = 0; i < femalesCount; i++)
                             DoAhegaoFaintnessSpeed(i);
                             break;
                     }
+                //Les mode single female ahegao (can be either, modeCtrl - 1 is correct female)
                 else if (hScene._mode == 6)
                     switch (state)
                     {
                         case AhegaoState.orgasm:
-                            log.LogMessage("Orgasm ahegao, applying settings");
                             DoAhegaoOrgasm(hScene._modeCtrl - 1);
                             break;
                         case AhegaoState.faintness:
-                            log.LogMessage("Faintness ahegao, applying settings");
                             DoAhegaoFaintness(hScene._modeCtrl - 1);
                             break;
                         case AhegaoState.faintnessSpeed:
-                            log.LogMessage("FaintnessSpeed ahegao, applying settings");
                             DoAhegaoFaintnessSpeed(hScene._modeCtrl - 1);
                             break;
                     }
@@ -438,7 +429,11 @@ namespace HC_Ahegao
                 hSceneFemales[i].face.ChangeMouthPtn(mouthPtnOrgasm.Value, true);
                 hSceneFemales[i].face.ChangeMouthOpenMin(openMouthMinOrgasm.Value);
                 hSceneFemales[i].face.ChangeMouthOpenMax(openMouthMinOrgasm.Value);
-                hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(originalBlush[i] + blushOrgasm.Value));
+                //Check if blush is over max limit since ahegao settings is offset
+                float newBlush = originalBlush[i] + blushOrgasm.Value;
+                if (newBlush > maxBlush.Value)
+                    newBlush = maxBlush.Value;
+                hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(newBlush));
                 if (blinkOrgasm.Value) //If blinking enabled set EyesOpenMax/Min
                 {
                     hSceneFemales[i].face.ChangeEyesOpenMax(openEyeOrgasm.Value * 0.92f);
@@ -463,7 +458,11 @@ namespace HC_Ahegao
                 hSceneFemales[i].face.ChangeMouthPtn(mouthPtnFaintness.Value, true);
                 hSceneFemales[i].face.ChangeMouthOpenMin(openMouthMinFaintness.Value);
                 hSceneFemales[i].face.ChangeMouthOpenMax(openMouthMinFaintness.Value);
-                hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(originalBlush[i] + blushFaintness.Value));
+                //Check if blush is over max limit since ahegao settings is offset
+                float newBlush = originalBlush[i] + blushFaintness.Value;
+                if (newBlush > maxBlush.Value)
+                    newBlush = maxBlush.Value;
+                hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(newBlush));
                 if (blinkFaintness.Value) //If blinking enabled set EyesOpenMax/Min
                 {
                     hSceneFemales[i].face.ChangeEyesOpenMax(openEyeFaintness.Value * 0.92f);
@@ -487,8 +486,11 @@ namespace HC_Ahegao
                 hSceneFemales[i].face.fileStatus.tearsLv = (byte)tearsLevelFaintnessSpeed.Value;
                 hSceneFemales[i].face.ChangeMouthPtn(mouthPtnFaintnessSpeed.Value, true);
                 hSceneFemales[i].face.ChangeMouthOpenMin(openMouthMinFaintnessSpeed.Value);
-                hSceneFemales[i].face.ChangeMouthOpenMax(openMouthMinFaintnessSpeed.Value);
-                hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(originalBlush[i] + blushFaintnessSpeed.Value));
+                //Check if blush is over max limit since ahegao settings is offset
+                float newBlush = originalBlush[i] + blushFaintnessSpeed.Value;
+                if (newBlush > maxBlush.Value)
+                    newBlush = maxBlush.Value;
+                hSceneFemales[i].face.ChangeHohoAkaRate(new Il2CppSystem.Nullable<float>(newBlush));
                 if (blinkFaintnessSpeed.Value) //If blinking enabled set EyesOpenMax/Min
                 {
                     hSceneFemales[i].face.ChangeEyesOpenMax(openEyeFaintnessSpeed.Value * 0.92f);
@@ -500,13 +502,24 @@ namespace HC_Ahegao
                     hSceneFemales[i].face.eyesCtrl.OpenMin = openEyeFaintnessSpeed.Value;
                 }
             }
-            public static void ResetAhegao(bool blend)
+            public static void ResetAhegao()
             {
-                //Reset persistent settings with overflow instant for instant change
+                //Reset ahegao
                 for (int i = 0; i < femalesCount; i++)
                 {
                     hSceneFemales[i].face.eyesCtrl.OpenMin = originalEyeOpenMin[i];
-                    MoveEyes(i, originalEyeY[i], originalEyeX[i], blend);
+                    MoveEyes(i, originalEyeY[i], originalEyeX[i], true);
+                }
+            }
+
+            public static void ResetAhegaoInstant()
+            {
+                //Instantly reset ahegao
+                for (int i = 0; i < femalesCount; i++)
+                {
+                    hSceneFemales[i].face.eyesCtrl.OpenMin = originalEyeOpenMin[i];
+                    hSceneFemales[i].fileCustom.Face.eyeY = originalEyeY[i];
+                    hSceneFemales[i].fileCustom.Face.eyeX = originalEyeX[i];
                 }
             }
 
@@ -516,7 +529,7 @@ namespace HC_Ahegao
                 [HarmonyPatch(typeof(HScene), "Start")]
                 public static void StartHook(HScene __instance)
                 {
-                    //Get instance
+                    //Get instance and create component
                     hScene = __instance;
                     ahegaoInstance.AddAhegaoComponent();
                 }
@@ -525,25 +538,15 @@ namespace HC_Ahegao
                 [HarmonyPatch(typeof(HScene), "ChangeModeCtrl")]
                 public static void ChangeModeCtrlHook()
                 {
+                    
                     //Apply only once per HScene
                     if (!applied)
                     {
                         GetFemales();
+                        SetOrgasmAmount();
                         applied = true;
                     }
-                }
-
-                [HarmonyPostfix]
-                [HarmonyPatch(typeof(Sonyu), "SetPlay")]
-                [HarmonyPatch(typeof(Les), "SetPlay")]
-                [HarmonyPatch(typeof(Aibu), "setPlay")]
-                [HarmonyPatch(typeof(MultiPlay_F2M1), "setPlay")]
-                [HarmonyPatch(typeof(MultiPlay_F1M2), "SetPlay")]
-                [HarmonyPatch(typeof(Masturbation), "SetPlay")]
-                [HarmonyPatch(typeof(Houshi), "SetPlay")]
-                public static void HSceneGetAnimationFlagHook()
-                {
-                    log.LogMessage($"Mode: {hScene._mode}, ctrl: {hScene._modeCtrl}");
+                    //Check which female can ahegao
                     if (hScene._mode == 6 && hScene._modeCtrl == 0 || hScene._mode == 7)
                     {
                         ahegaoMainFemaleProc = false;
@@ -559,17 +562,24 @@ namespace HC_Ahegao
                         ahegaoMainFemaleProc = false;
                         ahegaoBothFemaleProc = false;
                     }
-                    log.LogMessage($"Status on procs: Main: {ahegaoMainFemaleProc}, both: {ahegaoBothFemaleProc}");
+                    //If faintness, set ahegao to normal faintness on mode change for all females
+                    //then set correct ahegao for female that can ahegao
+                    if (hScene.CtrlFlag.IsFaintness)
+                    {
+                        for (int i = 0; i < femalesCount; i++)
+                        {
+                            DoAhegaoFaintness(i);
+                        }
+                        DoAhegao();
+                    }
                 }
 
                 [HarmonyPostfix]
                 [HarmonyPatch(typeof(HSceneFlagCtrl), "AddOrgasm")]
                 public static void HSceneFlagCtrlAddOrgasm()
                 {
-                    //Set flag for nowFemaleOrgasm and increase orgasm count
+                    //Set flag for nowFemaleOrgasm
                     nowFemaleOrgasm = true;
-                    if (orgasms < 3)
-                        orgasms++;
                     ahegaoOrgasmProc = ahegaoOrgasmShouldProc();
                 }
 
@@ -592,7 +602,6 @@ namespace HC_Ahegao
                         //Check for orgasm. ahegaoOrgasmProc is set when femaleOrgasm
                         if (state != AhegaoState.orgasm && ahegaoOrgasmProc && hScene.CtrlFlag.NowOrgasm)
                         {
-                            log.LogMessage("Orgasm. State = orgasm");
                             state = AhegaoState.orgasm;
                             DoAhegao();
                         }
@@ -601,14 +610,23 @@ namespace HC_Ahegao
                             //If orgasm is over reset state and ahegaoOrgasmProc
                             if (!hScene.CtrlFlag.NowOrgasm && nowFemaleOrgasm)
                             {
-                                log.LogMessage("Orgasm over. Resetting nowFemaleOrgasm");
                                 nowFemaleOrgasm = false;
                                 ahegaoOrgasmProc = ahegaoOrgasmShouldProc();
                                 state = AhegaoState.afterOrgasm;
                             }
                             else { /*Do nothing if still orgasming*/ }
                         }
-                        //If faintness and not houshi(male foreplay)
+                        //Reset ahegao if not in orgasm or faintness
+                        else if (!hScene.CtrlFlag.IsFaintness)
+                        {
+                            if (state != AhegaoState.none)
+                            {
+                                state = AhegaoState.none;
+                                ResetAhegao();
+                            }
+                            else { /*Do nothing if state already set to none*/ }
+                        }
+                        //If not houshi(male foreplay) and faintness
                         else if (hScene.CtrlFlag.IsFaintness && hScene._sprite.CategoryFinish._houshiPosKind == 0)
                         {
                             //If loopType 2 always set state to faintnessSpeed
@@ -616,7 +634,6 @@ namespace HC_Ahegao
                             {
                                 if (state != AhegaoState.faintnessSpeed)
                                 {
-                                    log.LogMessage("LoopType 2. State = faintnessSpeed");
                                     state = AhegaoState.faintnessSpeed;
                                     DoAhegao();
                                 }
@@ -625,14 +642,12 @@ namespace HC_Ahegao
                             //If enough speed set state to faintnessSpeed
                             else if (state != AhegaoState.faintnessSpeed && (hScene.CtrlFlag.Speed >= minSpeed.Value))
                             {
-                                log.LogMessage("Enough speed. State = faintnessSpeed");
                                 state = AhegaoState.faintnessSpeed;
                                 DoAhegao();
                             }
                             //If not enough speed set state to faintness
                             else if (state != AhegaoState.faintness && !(hScene.CtrlFlag.Speed >= minSpeed.Value))
                             {
-                                log.LogMessage("Not enough speed. State = faintness");
                                 state = AhegaoState.faintness;
                                 DoAhegao();
                             }
@@ -642,66 +657,27 @@ namespace HC_Ahegao
                         {
                             if (state != AhegaoState.faintness)
                             {
-                                log.LogMessage("HoushiPosKind 1. State = faintness");
                                 state = AhegaoState.faintness;
                                 DoAhegao();
                             }
                             else { /*Do nothing if state already set to faintness*/ }
                         }
-                        //If no ahegao reset state and set eyes to original position
-                        else if (state != AhegaoState.none)
-                        {
-                            log.LogMessage("No ahegao, resetting state");
-                            state = AhegaoState.none;
-                            ResetAhegao(true);
-                        }
                     }
-                }
-
-                [HarmonyPostfix]
-                [HarmonyPatch(typeof(HSceneSprite), "OnClickRecover")]
-                public static void OnClickRecoverHook()
-                {
-                    //Reset orgasm counter
-                    orgasms = 0;
-                    log.LogMessage("Resetting orgasm counter");
-                }
-
-                [HarmonyPrefix]
-                [HarmonyPatch(typeof(HC.Dialog.ShortcutViewDialog), "Load")]
-                [HarmonyPatch(typeof(HC.Dialog.HelpWindow), "Load")]
-                [HarmonyPatch(typeof(HC.Dialog.ExitDialog), "Manager_Scene_IOverlap_AddEvent")]
-                [HarmonyPatch(typeof(HC.Config.ConfigWindow), "Load")]
-                public static void ConfigSHook()
-                {
-                    paused++;
-                }
-                [HarmonyPrefix]
-                [HarmonyPatch(typeof(HC.Dialog.ShortcutViewDialog), "OnBack")]
-                [HarmonyPatch(typeof(HC.Dialog.HelpWindow), "SceneEnd")]
-                [HarmonyPatch(typeof(HC.Dialog.ExitDialog), "Manager_Scene_IOverlap_RemoveEvent")]
-                [HarmonyPatch(typeof(HC.Config.ConfigWindow), "Unload")]
-                public static void ConfigEHook()
-                {
-                    paused--;
                 }
 
                 [HarmonyPrefix]
                 [HarmonyPatch(typeof(HScene), "OnDestroy")]
                 public static void HScenePreOnDestroy()
                 {
-                    //Reset variables to prevent issues
-                    log.LogMessage("HScene OnDestroy, resetting variables");
+                    //Reset ahegao to prevent permanent changes and destroy component
+                    ResetAhegaoInstant();
                     state = AhegaoState.none;
-                    ResetAhegao(false);
-                    nowFemaleOrgasm = false;
-                    orgasms = 0;
-                    ahegaoOrgasmProc = false;
-                    Destroy(currentComponent);
-                    hScene = null;
-                    hSceneFemales = null;
-                    femalesCount = 0;
                     applied = false;
+                    femalesCount = 0;
+                    hSceneFemales = null;
+                    nowFemaleOrgasm = false;
+                    hScene = null;
+                    Destroy(currentComponent);
                 }
             }
         }
