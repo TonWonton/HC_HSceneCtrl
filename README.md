@@ -25,12 +25,15 @@ https://github.com/ManlyMarco/HC-HF_Patch
 
 ## Plugins
 - **HC_Ahegao v1.0.0**
+
 Set different faces for faintness, faintness when speed is high enough, and orgasm
 
 - **HC_HGaugeAndSpeedCtrl v1.0.1**
+
 Control HGauge speeds, auto climax, and animation speeds.
 
 - **HC_HSceneBreastJiggle v1.0.1**
+
 Set custom values for breast softness during HScenes
 
 ## Description
