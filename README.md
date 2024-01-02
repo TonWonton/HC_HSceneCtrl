@@ -1,12 +1,12 @@
 ## Prerequisites
+BepInEx Unity Il2Cpp (6.0.0-be-680 or newer)
+
+https://github.com/BepInEx/BepInEx
+
+
 BepisPlugins for HC
 
 https://github.com/IllusionMods/BepisPlugins
-
-
-BepInEx Unity Il2Cpp (plugin only tested on 6.0.0-be674 and be680)
-
-https://github.com/BepInEx/BepInEx
 
 
 BepInEx.ConfigurationManager Il2Cpp
@@ -14,7 +14,7 @@ BepInEx.ConfigurationManager Il2Cpp
 https://github.com/BepInEx/BepInEx.ConfigurationManager
 
 
-All included in HF-patch
+All prerequisites already included in HF-patch
 
 https://github.com/ManlyMarco/HC-HF_Patch
 
@@ -43,6 +43,7 @@ Thanks to Sabakan for sharing their HC_HGaugeCtrl code and letting me use it.
 **HC_HGaugeAndSpeedCtrl v1.0.1**
 - Male gauge will still increase when it's not supposed to after female faintness, if female faintness alters the position to where male gauge shouldn't increase
 - Gauge will also increase if in multi female houshi(male foreplay)
+Fix currently being made and will be released when ready
 
 **HC_Ahegao v1.0.0**
 - In scenes where eyes are supposed to be closed (eg. bedroom scene), eyes position and type will be set to plugin settings instead
