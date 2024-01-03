@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using H;
 using HarmonyLib;
@@ -34,6 +35,8 @@ namespace HC_HGaugeAndSpeedCtrl
         public static ConfigEntry<float> maxLoopSpeedS;
         public static ConfigEntry<float> minLoopSpeedO;
         public static ConfigEntry<float> maxLoopSpeedO;
+
+        public static ManualLogSource log = new ManualLogSource(PluginName);
 
         public override void Load()
         {
@@ -70,6 +73,7 @@ namespace HC_HGaugeAndSpeedCtrl
             minLoopSpeedO.SettingChanged += (sender, args) => ApplyLoopSpeeds();
             maxLoopSpeedO.SettingChanged += (sender, args) => ApplyLoopSpeeds();
             //Patch and register type
+            BepInEx.Logging.Logger.Sources.Add(log);
             Harmony.CreateAndPatchAll(typeof(HGaugeCtrlNewComponent.Hooks), GUID);
             ClassInjector.RegisterTypeInIl2Cpp<HGaugeCtrlNewComponent>();
         }
@@ -124,7 +128,9 @@ namespace HC_HGaugeAndSpeedCtrl
             public static float gaugeHitIncreaseM;
 
             public static bool fFeelAnimation;
+            public static bool fFeelAnimationProc;
             public static bool mFeelAnimation;
+            public static bool mFeelAnimationProc;
             public static bool flag;
             private static string _playAnimation;
             private static bool maleFinishing;
@@ -133,6 +139,12 @@ namespace HC_HGaugeAndSpeedCtrl
             private static float paused;
             private static float _isDoubleClick;
             private static bool clickChangeSpeed;
+            private static bool fFeelAnimationShouldProc() {
+                return fFeelAnimation && flag && !hScene.CtrlFlag.StopFeelFemale && hSceneSprite.CategoryFinish._houshiPosKind == 0;
+            }
+            private static bool mFeelAnimationShouldProc() {
+                return mFeelAnimation && flag && !hScene.CtrlFlag.StopFeelMale && !(hScene.CtrlFlag.IsFaintness && (hScene.CtrlFlag.NowAnimationInfo.ID == 29 || hScene.CtrlFlag.NowAnimationInfo.ID == 22 || hScene.CtrlFlag.NowAnimationInfo.ID == 9));
+            }
 
             void Update()
             {
@@ -153,81 +165,78 @@ namespace HC_HGaugeAndSpeedCtrl
 
             void FixedUpdate()
             {
-                if (paused == 0)
+                //If speed scaling enabled and game not paused
+                if (paused == 0 && HGaugeAndSpeedCtrl.Speed.Value)
                 {
-                    //If speed scaling enabled and game not paused
-                    if (HGaugeAndSpeedCtrl.Speed.Value)
+                    //If female gauge can increase
+                    if (fFeelAnimationProc)
                     {
-                        //If female gauge can increase
-                        if (HGaugeCtrlNewComponent.fFeelAnimation && HGaugeCtrlNewComponent.flag && !HGaugeCtrlNewComponent.hScene.CtrlFlag.StopFeelFemale)
+                        //If normal female gauge
+                        if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit)
                         {
-                            //If normal female gauge
-                            if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit)
-                            {
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
-                            }
-                            else
-                            {  //If female gauge hit
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
-                            }
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
                         }
-                        //If male gauge can increase
-                        if (HGaugeCtrlNewComponent.mFeelAnimation && HGaugeCtrlNewComponent.flag && !HGaugeCtrlNewComponent.hScene.CtrlFlag.StopFeelMale)
-                        {
-                            //If normal male gauge
-                            if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit_M)
-                            {
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
-                            }
-                            else
-                            {  //If male gauge hit
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
-                            }
+                        else
+                        {  //If female gauge hit
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
                         }
                     }
-
-                    //If speed scaling disabled
-                    else if (!HGaugeAndSpeedCtrl.Speed.Value)
+                    //If male gauge can increase
+                    if (mFeelAnimationProc)
                     {
-                        //If female gauge can increase
-                        if (HGaugeCtrlNewComponent.fFeelAnimation && HGaugeCtrlNewComponent.flag && !HGaugeCtrlNewComponent.hScene.CtrlFlag.StopFeelFemale)
-                        {   //If normal female gauge
-                            if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit)
-                            {
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF;
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF;
-                            }
-                            else
-                            {  //If female gauge hit
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF;
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF;
-                            }
+                        //If normal male gauge
+                        if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit_M)
+                        {
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
                         }
-                        //If male gauge can increase
-                        if (HGaugeCtrlNewComponent.mFeelAnimation && HGaugeCtrlNewComponent.flag && !HGaugeCtrlNewComponent.hScene.CtrlFlag.StopFeelMale)
-                        {   //If normal male gauge
-                            if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit_M)
-                            {
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM;
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM;
-                            }
-                            else
-                            { //If male gauge hit
-                                if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
-                                    HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM;
-                                else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM;
-                            }
+                        else
+                        {  //If male gauge hit
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed - 0.5f);
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM * (HGaugeCtrlNewComponent.hScene.CtrlFlag.Speed + 0.5f);
+                        }
+                    }
+                }
+
+                //If speed scaling disabled
+                else if (paused == 0 && !HGaugeAndSpeedCtrl.Speed.Value)
+                {
+                    //If female gauge can increase
+                    if (fFeelAnimationProc)
+                    {   //If normal female gauge
+                        if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit)
+                        {
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF;
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeIncreaseF;
+                        }
+                        else
+                        {  //If female gauge hit
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF;
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_f += gaugeHitIncreaseF;
+                        }
+                    }
+                    //If male gauge can increase
+                    if (mFeelAnimationProc)
+                    {   //If normal male gauge
+                        if (!HGaugeCtrlNewComponent.hScene.CtrlFlag.IsGaugeHit_M)
+                        {
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM;
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeIncreaseM;
+                        }
+                        else
+                        { //If male gauge hit
+                            if (HGaugeCtrlNewComponent.hScene.CtrlFlag.LoopType == 1)
+                                HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM;
+                            else HGaugeCtrlNewComponent.hScene.CtrlFlag.Feel_m += gaugeHitIncreaseM;
                         }
                     }
                 }
@@ -260,6 +269,16 @@ namespace HC_HGaugeAndSpeedCtrl
                 }
 
                 [HarmonyPostfix]
+                [HarmonyPatch(typeof(HScene), "ChangeModeCtrl")]
+                public static void ChangeModeCtrlHook()
+                {
+                    if (hScene.CtrlFlag.IsFaintness && (hScene.CtrlFlag.NowAnimationInfo.ID == 29 || hScene.CtrlFlag.NowAnimationInfo.ID == 22 || hScene.CtrlFlag.NowAnimationInfo.ID == 9))
+                    {
+                        mFeelAnimation = false;
+                    }
+                }
+
+                    [HarmonyPostfix]
                 [HarmonyPatch(typeof(Sonyu), "SetPlay")]
                 [HarmonyPatch(typeof(Les), "SetPlay")]
                 [HarmonyPatch(typeof(Aibu), "setPlay")]
@@ -272,6 +291,8 @@ namespace HC_HGaugeAndSpeedCtrl
                     _playAnimation = playAnimation;
                     flag = (_playAnimation == "WLoop" || _playAnimation == "D_WLoop" || _playAnimation == "MLoop" || _playAnimation == "D_MLoop" ||
                             _playAnimation == "OLoop" || _playAnimation == "D_OLoop" || _playAnimation == "SLoop" || _playAnimation == "D_SLoop");
+                    fFeelAnimationProc = fFeelAnimationShouldProc();
+                    mFeelAnimationProc = mFeelAnimationShouldProc();
                 }
 
                 [HarmonyPrefix]
@@ -397,6 +418,14 @@ namespace HC_HGaugeAndSpeedCtrl
                             }
                         }
                     }
+                }
+
+                [HarmonyPostfix]
+                [HarmonyPatch(typeof(HSceneSprite), "OnClickStopFeel")]
+                public static void OnClickStopFeelHook(int sex)
+                {
+                    fFeelAnimationProc = fFeelAnimationShouldProc();
+                    mFeelAnimationProc = mFeelAnimationShouldProc();
                 }
 
                 [HarmonyPrefix]
