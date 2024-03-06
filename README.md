@@ -28,7 +28,7 @@ https://github.com/ManlyMarco/HC-HF_Patch
 
 - **HC_Ahegao v1.0.0:** Set different faces for faintness, faintness when speed is high enough, and orgasm
 
-- **HC_HSceneBreastJiggle v1.0.1:** Set custom values for breast softness during HScenes
+- **HC_HSceneBreastJiggle HAS BEEN MIGRATED TO: https://github.com/TonWonton/HC_HSceneBreastJiggle**
 
 ## Known issues
 **HC_Ahegao v1.0.0**
