@@ -14,6 +14,11 @@
 		<PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15" />
 		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="MagicaCloth">
+	    <HintPath>..\lib\MagicaCloth.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;D:\Games\HoneyCome\BepInEx\Plugins\&quot; /s /i /y" />
 		<Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;E:\Projects\Releases\&quot; /s /i /y" />

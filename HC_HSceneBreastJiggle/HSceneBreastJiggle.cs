@@ -7,6 +7,7 @@ using Character;
 using H;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using HarmonyLib;
+using MagicaCloth;
 
 namespace HC_HSceneBreastJiggle
 {
@@ -16,7 +17,7 @@ namespace HC_HSceneBreastJiggle
     {
         public const string PluginName = "HC_HSceneBreastJiggle";
         public const string GUID = "HC_HSceneBreastJiggle";
-        public const string PluginVersion = "1.0.1";
+        public const string PluginVersion = "1.1.0";
         //Breast softness
         public static ConfigEntry<bool> EnableBreastChange;
         public static ConfigEntry<float> BaseSoftness;
@@ -24,8 +25,11 @@ namespace HC_HSceneBreastJiggle
         public static ConfigEntry<float> BreastSizeScalingMultiplier;
         public static ConfigEntry<float> Softness;
         public static ConfigEntry<bool> ScaleSoftness;
+        //Magica settings
+        public static ConfigEntry<int> updateRate;
         //Instance
         public static HScene hScene;
+        public static MagicaPhysicsManager magicaPhysicsManager;
         //Variables
         public static Human[] hSceneFemales;
         public static float[] originalBreastData = new float[3];
@@ -42,13 +46,22 @@ namespace HC_HSceneBreastJiggle
             BreastSizeScalingMultiplier = Config.Bind("Breast softness", "Scale down softness with size", 0.25f, new ConfigDescription
                                                                         ("Higher values = less bounce on larger breasts.\nSmaller breasts are affected exponentially less." +
                                                                         "\n100% = 0% bounce on max size, 0% = same as settings.", new AcceptableValueRange<float>(0f, 1f)));
-            ScaleSoftness = Config.Bind("Breast softness", "Scale down weight with size", true, "Also scale weight down with breast size");
+            ScaleSoftness = Config.Bind("Breast softness", "Scale weight up with size", true, "Scale weight up to weight value set\n" +
+                                                                                                   "If enabled, smaller breasts will have less weight\n" +
+                                                                                                   "Larger breasts will have more weight, scaling up to weight value");
+            //Magica settings
+            updateRate = Config.Bind("Magica settings", "Update rate", 90, new ConfigDescription("Change update rate of physics calculation\n" +
+                                                                                                 "Higher values increases accuracy of physics but uses more CPU\n" +
+                                                                                                 "Might drastically change how breasts jiggle\n" +
+                                                                                                 "Also affects other physics object, such as clothes and hair", new AcceptableValueList<int>(60, 90, 120, 150, 180)));
+            //Update settings
             EnableBreastChange.SettingChanged += (sender, args) => SaveAndApplyData();
             BaseSoftness.SettingChanged += (sender, args) => SaveAndApplyData();
             TipSoftness.SettingChanged += (sender, args) => SaveAndApplyData();
             Softness.SettingChanged += (sender, args) => SaveAndApplyData();
             BreastSizeScalingMultiplier.SettingChanged += (sender, args) => SaveAndApplyData();
             ScaleSoftness.SettingChanged += (sender, args) => SaveAndApplyData();
+            updateRate.SettingChanged += (sender, args) => SaveAndApplyData();
             Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
         }
 
@@ -77,18 +90,21 @@ namespace HC_HSceneBreastJiggle
             //If enabled, apply values
             if (EnableBreastChange.Value)
             {
+                //Change update rate
+                if (magicaPhysicsManager != null)
+                    magicaPhysicsManager.UpdatePerSeccond = (MagicaCloth.UpdateTimeManager.UpdateCount)updateRate.Value;
                 for (int i = 0; i < femalesCount; i++)
                 {
                     SaveBreastData(i);
                     //Calculates new breast softness multiplier based on breast size
                     float breastSizeMultiplier = ((hSceneFemales[i].body.breastFixed.bustSize * hSceneFemales[i].body.breastFixed.bustSize * hSceneFemales[i].body.breastFixed.bustSize
-                                                   * BreastSizeScalingMultiplier.Value * hSceneFemales[i].body.breastFixed.bustSize * -1) + 1);
+                                                   * BreastSizeScalingMultiplier.Value * hSceneFemales[i].body.breastFixed.bustSize * -1f) + 1f);
                     //Apply breast softness values
                     hSceneFemales[i].fileCustom.Body.bustSoftness = BaseSoftness.Value * breastSizeMultiplier;
                     hSceneFemales[i].fileCustom.Body.bustSoftness2 = TipSoftness.Value * breastSizeMultiplier;
                     //If else "also scale weight" option is enabled
                     if (ScaleSoftness.Value)
-                        hSceneFemales[i].fileCustom.Body.bustWeight = Softness.Value * breastSizeMultiplier;
+                        hSceneFemales[i].fileCustom.Body.bustWeight = Softness.Value * (1f - breastSizeMultiplier);
                     else
                         hSceneFemales[i].fileCustom.Body.bustWeight = Softness.Value;
                     //Update and revert so changes are not permanent
@@ -127,6 +143,14 @@ namespace HC_HSceneBreastJiggle
             {
                 //Get instances
                 hScene = __instance;
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(MagicaPhysicsManager), "Awake")]
+            public static void MagicaStartHook(MagicaPhysicsManager __instance)
+            {
+                //Get instance
+                magicaPhysicsManager = __instance;
             }
 
             [HarmonyPostfix]
